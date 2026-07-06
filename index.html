@@ -45,10 +45,25 @@
       equipmentList = await res.json();
       const select = document.getElementById("equipment");
       select.innerHTML = "";
+
+      // Add a placeholder option to prevent defaulting to a maintenance item
+      const placeholder = document.createElement("option");
+      placeholder.value = "";
+      placeholder.textContent = "Select equipment...";
+      placeholder.disabled = true;
+      placeholder.selected = true;
+      placeholder.hidden = true;
+      select.appendChild(placeholder);
+
       equipmentList.forEach(item => {
         const opt = document.createElement("option");
         opt.value = item.id;
-        opt.textContent = `${item.name} (PHP ${item.daily_rate}/day)`;
+        if (item.status === "maintenance") {
+          opt.disabled = true;
+          opt.textContent = `${item.name} (UNDER MAINTENANCE)`;
+        } else {
+          opt.textContent = `${item.name} (PHP ${item.daily_rate}/day)`;
+        }
         select.appendChild(opt);
       });
     }
@@ -88,8 +103,15 @@
       messageEl.className = "";
       messageEl.textContent = "";
 
+      const eqId = document.getElementById("equipment").value;
+      if (!eqId) {
+        messageEl.className = "message err";
+        messageEl.textContent = "Please select a piece of equipment.";
+        return;
+      }
+
       const body = {
-        equipment_id: Number(document.getElementById("equipment").value),
+        equipment_id: Number(eqId),
         customer: document.getElementById("customer").value,
         from_date: document.getElementById("from").value,
         to_date: document.getElementById("to").value,
